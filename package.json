@@ -1,0 +1,11 @@
+{
+  "name": "node-curl-browser",
+  "version": "0.0.1",
+  "description": "",
+  "main": "request.js",
+  "author": "",
+  "license": "iTrack ONLY",
+  "dependencies": {
+    "node-curl" : "git://github.com/druidvav/node-curl.git#master"
+  }
+}
