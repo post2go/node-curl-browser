@@ -26,7 +26,6 @@ var Browser = function () {
         curl.setopt('POST', true);
         curl.setopt('POSTFIELDS', postData);
         curl.setopt('FOLLOWLOCATION', true);
-        curl.setopt('ACCEPT_ENCODING', '');
         curl.on('header', handleHeader);
         curl.on('error', handleError);
         curl.on('data', handleBody);
@@ -58,7 +57,7 @@ var Browser = function () {
 
         function handleFinish() {
             var result = {
-                responseStatus: curl.getinfo('RESPONSE_CODE'),
+                responseStatus: responseStatus, // curl.getinfo('RESPONSE_CODE'),
                 contentType: curl.getinfo('CONTENT_TYPE'),
                 responseHeaders: responseHeaders,
                 responseBody: Buffer.concat(responseBody)
@@ -99,3 +98,4 @@ var Browser = function () {
         }
     };
 };
+module.exports = Browser;
