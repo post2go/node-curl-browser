@@ -1,4 +1,7 @@
 var Curl = require('node-curl/lib/Curl');
+var Cookie = require('tough-cookie').Cookie;
+var CookieJar = require('tough-cookie').CookieJar;
+
 var Browser = function () {
     var self = this;
 
@@ -7,9 +10,17 @@ var Browser = function () {
         'User-Agent: Mozilla/5.0 (Windows NT 6.3; rv:27.0) Gecko/20100101 Firefox/27.0'
     ];
 
-    var cookies = [ ];
+    var cookiejar = new CookieJar();
+
+    self.get = function (url, callback) {
+        return processRequest('GET', url, null, callback);
+    };
 
     self.post = function (url, postData, callback) {
+        return processRequest('POST', url, postData, callback);
+    };
+
+    function processRequest(method, url, postData, callback) {
         var responseHeaders = [ ];
         var responseStatus = 0;
         var responseBody = [ ];
@@ -17,14 +28,16 @@ var Browser = function () {
 
         var headers;
         headers = globalHeaders;
-        headers.push('Cookie: ' + cookies.join(';'));
+        headers.push('Cookie: ' + cookiejar.getCookieStringSync(url));
 
         var curl = new Curl();
         curl.setopt('URL', url);
         curl.setopt('NOPROGRESS', true);
         curl.setopt('HTTPHEADER', headers);
-        curl.setopt('POST', true);
-        curl.setopt('POSTFIELDS', postData);
+        if (method == 'POST') {
+            curl.setopt('POST', true);
+            curl.setopt('POSTFIELDS', postData);
+        }
         curl.setopt('FOLLOWLOCATION', true);
         curl.on('header', handleHeader);
         curl.on('error', handleError);
@@ -67,8 +80,8 @@ var Browser = function () {
                 var header = responseHeaders[i];
 
                 if(/Set\-Cookie:/.test(header)) {
-                    var cookie = header.split(';')[0].split(':')[1].trim();
-                    cookies.push(cookie);
+                    var cookie = Cookie.parse(header.replace('Set-Cookie: ', '').trim());
+                    cookiejar.setCookieSync(cookie, url);
                 }
             }
             curl.close();
@@ -96,6 +109,7 @@ var Browser = function () {
                 callback(null, result);
             }
         }
-    };
+    }
+
 };
 module.exports = Browser;
