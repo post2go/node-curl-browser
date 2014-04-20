@@ -7,28 +7,54 @@ var Browser = function () {
 
     var globalHeaders = [
         'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'User-Agent: Mozilla/5.0 (Windows NT 6.3; rv:27.0) Gecko/20100101 Firefox/27.0'
+        'Accept-Language: en-US,en;q=0.8,ru;q=0.6',
+        'Accept-Encoding: gzip,deflate,sdch',
+        'Connection: close',
+        'User-Agent: Mozilla/5.0 (Windows NT 6.3; rv:27.0) Gecko/20100101 Firefox/27.0',
+        'Cache-Control: max-age=0',
+        'Expect: '  // remove "Expect: 100-continue" header
     ];
 
     var cookiejar = new CookieJar();
+    var referer = '';
 
     self.get = function (url, callback) {
-        return processRequest('GET', url, null, callback);
+        return processRequest('GET', { url: url }, callback);
     };
 
     self.post = function (url, postData, callback) {
-        return processRequest('POST', url, postData, callback);
+        return processRequest('POST', { url: url, postData: postData }, callback);
     };
 
-    function processRequest(method, url, postData, callback) {
+    self.postEx = function (options, callback) {
+        return processRequest('POST', options, callback);
+    };
+
+    self.setReferer = function (url) {
+        referer = url;
+    };
+
+    function processRequest(method, options, callback) {
+        var url = options.url;
+
         var responseHeaders = [ ];
         var responseStatus = 0;
         var responseBody = [ ];
         var callbackCalled = false;
 
-        var headers;
-        headers = globalHeaders;
-        headers.push('Cookie: ' + cookiejar.getCookieStringSync(url));
+        var headers = JSON.parse(JSON.stringify(globalHeaders)); // Cloning object
+        var cookieString = cookiejar.getCookieStringSync(url);
+        if (cookieString) {
+            headers.push('Cookie: ' + cookieString);
+        }
+        if (referer) {
+            headers.push('Referer: ' + referer);
+        }
+        if (options.contentType) {
+            headers.push('Content-Type: ' + options.contentType);
+        } else if (method == 'POST') {
+            headers.push('Content-Type: application/x-www-form-urlencoded');
+        }
 
         var curl = new Curl();
         curl.setopt('URL', url);
@@ -36,18 +62,25 @@ var Browser = function () {
         curl.setopt('HTTPHEADER', headers);
         if (method == 'POST') {
             curl.setopt('POST', true);
-            curl.setopt('POSTFIELDS', postData);
+            curl.setopt('POSTFIELDS', options.postData);
         }
         curl.setopt('FOLLOWLOCATION', true);
+        curl.setopt('SSL_VERIFYHOST', false);
+        curl.setopt('SSL_VERIFYPEER', false);
+        curl.setopt('ACCEPT_ENCODING', 'gzip');
+
         curl.on('header', handleHeader);
         curl.on('error', handleError);
         curl.on('data', handleBody);
         curl.on('end', handleFinish);
-        curl.perform();
+        try {
+            curl.perform();
+        } catch (e) {
+            console.log(e);
+        }
 
         function handleError(error) {
             finishError(error.message);
-            curl.close();
         }
 
         function handleHeader(chunk) {
@@ -70,10 +103,10 @@ var Browser = function () {
 
         function handleFinish() {
             var result = {
-                responseStatus: responseStatus, // curl.getinfo('RESPONSE_CODE'),
+                status: responseStatus, // curl.getinfo('RESPONSE_CODE'),
                 contentType: curl.getinfo('CONTENT_TYPE'),
-                responseHeaders: responseHeaders,
-                responseBody: Buffer.concat(responseBody)
+                headers: responseHeaders,
+                body: Buffer.concat(responseBody)
             };
             for (var i in responseHeaders) {
                 if(!responseHeaders.hasOwnProperty(i)) continue;
@@ -84,7 +117,6 @@ var Browser = function () {
                     cookiejar.setCookieSync(cookie, url);
                 }
             }
-            curl.close();
             finishSuccess(result);
         }
 
@@ -102,6 +134,7 @@ var Browser = function () {
                 console.trace();
                 return;
             }
+            curl.close();
             callbackCalled = true;
             if(error) {
                 callback(error, null);
