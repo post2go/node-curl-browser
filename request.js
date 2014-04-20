@@ -73,11 +73,7 @@ var Browser = function () {
         curl.on('error', handleError);
         curl.on('data', handleBody);
         curl.on('end', handleFinish);
-        try {
-            curl.perform();
-        } catch (e) {
-            console.log(e);
-        }
+        curl.perform();
 
         function handleError(error) {
             finishError(error.message);
