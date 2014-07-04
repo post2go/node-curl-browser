@@ -76,7 +76,6 @@ var Browser = function () {
         curl.setopt('ACCEPT_ENCODING', 'gzip');
         if (proxy) {
             curl.setopt('PROXY', proxy);
-            curl.setopt('PROXYTYPE', 5);
         }
 
         curl.on('header', handleHeader);
