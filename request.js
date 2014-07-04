@@ -34,6 +34,12 @@ var Browser = function () {
         referer = url;
     };
 
+    var proxy = null;
+
+    self.setProxy = function (host) {
+        proxy = host;
+    };
+
     function processRequest(method, options, callback) {
         var url = options.url;
 
@@ -68,6 +74,10 @@ var Browser = function () {
         curl.setopt('SSL_VERIFYHOST', false);
         curl.setopt('SSL_VERIFYPEER', false);
         curl.setopt('ACCEPT_ENCODING', 'gzip');
+        if (proxy) {
+            curl.setopt('PROXY', proxy);
+            curl.setopt('PROXYTYPE', 5);
+        }
 
         curl.on('header', handleHeader);
         curl.on('error', handleError);
