@@ -1,4 +1,4 @@
-var Curl = require('dv-curl/lib/Curl');
+var Curl = require('post2go-curl/lib/Curl');
 var Cookie = require('tough-cookie').Cookie;
 var CookieJar = require('tough-cookie').CookieJar;
 
