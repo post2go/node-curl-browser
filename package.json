@@ -1,12 +1,12 @@
 {
   "name": "post2go-curl-browser",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "description": "",
   "main": "request.js",
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "post2go-curl" : "0.3.*",
+    "post2go-curl" : "0.3.x",
     "tough-cookie" : "0.12.1"
   }
 }
