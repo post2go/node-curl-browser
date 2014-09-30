@@ -111,7 +111,8 @@ var Browser = function () {
                 status: responseStatus, // curl.getinfo('RESPONSE_CODE'),
                 contentType: curl.getinfo('CONTENT_TYPE'),
                 headers: responseHeaders,
-                body: Buffer.concat(responseBody)
+                body: Buffer.concat(responseBody),
+                proxy: proxy
             };
             for (var i in responseHeaders) {
                 if(!responseHeaders.hasOwnProperty(i)) continue;
@@ -130,7 +131,7 @@ var Browser = function () {
         }
 
         function finishError(error) {
-            finish({ error: error, url: url });
+            finish({ error: error, url: url, proxy: proxy });
         }
 
         function finish(error, result) {
