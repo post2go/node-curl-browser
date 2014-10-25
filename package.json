@@ -5,6 +5,10 @@
   "main": "request.js",
   "author": "",
   "license": "MIT",
+  "repository" : {
+      "type" : "git",
+      "url" : "git@github.com:post2go/node-curl-browser.git"
+  },
   "dependencies": {
     "post2go-curl" : "0.3.x",
     "tough-cookie" : "0.12.1"
