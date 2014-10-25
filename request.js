@@ -47,11 +47,21 @@ var Browser = function () {
         var responseStatus = 0;
         var responseBody = [ ];
         var callbackCalled = false;
+        var headers = [];
 
-        var headers = JSON.parse(JSON.stringify(globalHeaders)); // Cloning object
-        var cookieString = cookiejar.getCookieStringSync(url);
-        if (cookieString) {
-            headers.push('Cookie: ' + cookieString);
+        if (options.headers) {
+            headers = JSON.parse(JSON.stringify(options.headers)); // Cloning object
+        } else {
+            headers = JSON.parse(JSON.stringify(globalHeaders)); // Cloning object
+        }
+
+        if (options.cookies) {
+            headers.push('Cookie: ' + options.cookies);
+        } else {
+            var cookieString = cookiejar.getCookieStringSync(url);
+            if (cookieString) {
+                headers.push('Cookie:' + cookieString);
+            }
         }
         if (referer) {
             headers.push('Referer: ' + referer);
@@ -74,6 +84,8 @@ var Browser = function () {
         curl.setopt('SSL_VERIFYHOST', false);
         curl.setopt('SSL_VERIFYPEER', false);
         curl.setopt('ACCEPT_ENCODING', 'gzip');
+        curl.setopt('TIMEOUT', 60);
+        curl.setopt('CONNECTTIMEOUT', 30);
         if (proxy) {
             curl.setopt('PROXY', proxy);
         }
