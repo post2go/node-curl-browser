@@ -30,6 +30,10 @@ var Browser = function () {
         return processRequest('POST', options, callback);
     };
 
+    self.getEx = function (options, callback) {
+        return processRequest('GET', options, callback);
+    };
+
     self.setReferer = function (url) {
         referer = url;
     };
